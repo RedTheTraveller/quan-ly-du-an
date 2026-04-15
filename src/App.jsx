@@ -6,11 +6,12 @@ import { INITIAL_COLS } from './utils/constants';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import TaskModal from './components/TaskModal';
-import Login from './pages/Login';
+import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import KanbanBoard from './pages/KanbanBoard';
 import Timeline from './pages/Timeline';
 import ResourceView from './pages/ResourceView';
+import UpdatePassword from './pages/UpdatePassword';
 
 // ==========================================
 // 1. LOGIC TÍNH TOÁN PERT
@@ -99,14 +100,25 @@ export default function App() {
 
   // XỬ LÝ AUTH SUPABASE
   const handleAuth = async (e) => {
-    e.preventDefault();
-    const { data: users, error } = await supabase
-      .from('Users') 
-      .select('*')
-      .eq('email', login.u) 
-      .eq('password', login.p);
+  e.preventDefault();
+  
+    // 1. Đăng nhập bằng hệ thống bảo mật Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: login.u,
+      password: login.p,
+    });
 
-    if (error) { alert("Lỗi kết nối Server: " + error.message); return; }
+    if (authError) {
+      alert("Sai tài khoản hoặc mật khẩu!");
+      return; 
+    }
+
+    // 2. Nếu đúng mật khẩu, lấy thêm thông tin Name, Role từ bảng Users
+    const { data: users, error: dbError } = await supabase
+      .from('Users')
+      .select('*')
+      .eq('email', login.u);
+
     if (users && users.length > 0) {
       const dbUser = users[0];
       setUser({
@@ -118,7 +130,8 @@ export default function App() {
         rate: 200000 
       });
     } else {
-      alert("Sai tài khoản hoặc mật khẩu! (Lưu ý nhập đúng Email đăng nhập)");
+      // Trường hợp tài khoản có trong Auth nhưng chưa có trong bảng Users
+      setUser({ username: login.u, role: 'Member', avatar: 'Developer', rate: 200000 });
     }
   };
 
@@ -160,8 +173,12 @@ export default function App() {
     a.href = url; a.download = 'bao-cao-du-an.json'; a.click();
   };
 
+  if (window.location.pathname === '/update-password') {
+    return <UpdatePassword />;
+  }
+
   // NẾU CHƯA ĐĂNG NHẬP
-  if (!user) return <Login login={login} setLogin={setLogin} onAuth={handleAuth} />;
+  if (!user) return <Auth login={login} setLogin={setLogin} onAuth={handleAuth} />;
 
   // GIAO DIỆN CHÍNH
   return (
