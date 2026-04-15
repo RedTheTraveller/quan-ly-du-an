@@ -12,6 +12,7 @@ import KanbanBoard from './pages/KanbanBoard';
 import Timeline from './pages/Timeline';
 import ResourceView from './pages/ResourceView';
 import UpdatePassword from './pages/UpdatePassword';
+import ProjectAccess from './pages/ProjectAccess';
 
 // ==========================================
 // 1. LOGIC TÍNH TOÁN PERT
@@ -31,6 +32,7 @@ const calcPert = (o, m, p, rate) => {
 // ==========================================
 export default function App() {
   const [user, setUser] = useState(null);
+  const [currentProject, setCurrentProject] = useState(null);
   const [login, setLogin] = useState({ u: '', p: '' });
   const [view, setView] = useState('dashboard');
   const [search, setSearch] = useState('');
@@ -179,6 +181,32 @@ export default function App() {
 
   // NẾU CHƯA ĐĂNG NHẬP
   if (!user) return <Auth login={login} setLogin={setLogin} onAuth={handleAuth} />;
+
+  // Hàm đăng xuất
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setCurrentProject(null);
+  };
+
+  // 1. Cửa ngoài: Chưa đăng nhập thì bắt đăng nhập
+  if (!user) {
+    return <Auth />; 
+  }
+
+  // 2. Cửa trong: Đăng nhập rồi nhưng chưa nhập mã dự án -> Hiện phòng chờ
+  if (user && !currentProject) {
+    return <ProjectAccess onAccessGranted={setCurrentProject} handleLogout={handleLogout} />;
+  }
+
+  // 3. Đã có mặt trong nhà: Truyền biến currentProject vào Dashboard để nó lấy đúng data
+  return (
+    <Dashboard 
+       user={user} 
+       project={currentProject} 
+       handleLogout={handleLogout} 
+    />
+  );
 
   // GIAO DIỆN CHÍNH
   return (
