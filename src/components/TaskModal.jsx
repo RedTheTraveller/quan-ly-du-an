@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Calculator, X } from 'lucide-react';
 
 export default function TaskModal({ task, close, onSave, usersList }) {
-  const [f, setF] = useState(task || { title: '', assigneeId: '', day: 1, o: 0, m: 0, p: 0, priority: 'Medium' });
+  const defaultTask = { title: '', assigneeId: '', day: 1, o: 0, m: 0, p: 0, priority: 'Medium' };
+  const [f, setF] = useState(task ? { ...defaultTask, ...task } : defaultTask);
   return (
     <div className="fixed inset-0 bg-[#1B2559]/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-[48px] shadow-2xl w-full max-w-2xl p-12 animate-in zoom-in-95 duration-200">

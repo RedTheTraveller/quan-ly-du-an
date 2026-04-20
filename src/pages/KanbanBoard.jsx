@@ -21,7 +21,7 @@ export default function KanbanBoard({ data, search, onDragEnd, onEdit, onAdd, on
                       {(provided) => (
                         <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4 min-h-[500px]">
                           {col.items.filter(i => i.title.toLowerCase().includes(search.toLowerCase())).map((item, index) => (
-                            <Draggable key={item.id} draggableId={item.id} index={index}>
+                            <Draggable key={String(item.id)} draggableId={String(item.id)} index={index}>
                               {(provided, snap) => (
                                 <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} 
                                   className={`bg-white p-5 rounded-3xl border border-gray-50 shadow-sm group transition-all ${snap.isDragging ? 'rotate-3 shadow-2xl ring-2 ring-blue-500' : 'hover:shadow-md hover:border-blue-100'}`}>
